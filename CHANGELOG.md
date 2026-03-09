@@ -5,6 +5,19 @@
 
 * clarify release-please changelog and notes generation ([56d8b23](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/56d8b2345c1832409b40a82b5db1e3ac39d86287))
 
+## [1.4.0](https://github.com/DDULDDUCK/whisper_ggml_plus/compare/v1.3.5...v1.4.0) (2026-03-09)
+
+
+### Features
+
+* expose configurable VAD mode in Dart requests ([4bd3b2c](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/4bd3b2cfad2fd50296c66fe2a9b55dc8459a180a))
+
+
+### Bug Fixes
+
+* add Windows FFI wrapper and loader support ([3987e27](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/3987e27f04dbfed3bc77e65daedd128c860a1b3f))
+* apply explicit VAD policy across transcription backends ([08651d1](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/08651d13cc5374abd745ee83bf2207118096b887))
+
 ## [1.3.5](https://github.com/DDULDDUCK/whisper_ggml_plus/compare/v1.3.4...v1.3.5) (2026-02-25)
 
 
