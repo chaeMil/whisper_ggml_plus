@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:whisper_ggml_plus/src/models/requests/transcribe_request.dart';
+import 'package:whisper_ggml_plus/src/models/requests/whisper_vad_mode.dart';
 import 'package:whisper_ggml_plus/src/models/whisper_dto.dart';
 
 part 'transcribe_request_dto.freezed.dart';
@@ -30,6 +31,8 @@ abstract class TranscribeRequestDto
     @JsonKey(name: 'is_realtime') required bool isRealtime,
     required bool diarize,
     @JsonKey(name: 'speed_up') required bool speedUp,
+    @JsonKey(name: 'vad_mode') required String vadMode,
+    @JsonKey(name: 'vad_model_path') String? vadModelPath,
   }) = _TranscribeRequestDto;
 
   /// Convert [request] to TranscribeRequestDto with specified [modelPath]
@@ -52,6 +55,8 @@ abstract class TranscribeRequestDto
       diarize: request.diarize,
       speedUp: request.speedUp,
       isRealtime: request.isRealtime,
+      vadMode: request.vadMode.wireValue,
+      vadModelPath: request.vadModelPath,
     );
   }
   const TranscribeRequestDto._();

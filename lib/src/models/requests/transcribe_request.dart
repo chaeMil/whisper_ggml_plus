@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'whisper_vad_mode.dart';
+
 part 'transcribe_request.freezed.dart';
 
 /// Transcription request parameters
@@ -19,6 +21,8 @@ abstract class TranscribeRequest with _$TranscribeRequest {
     @Default(false) bool noFallback,
     @Default(false) bool diarize,
     @Default(false) bool speedUp,
+    @Default(WhisperVadMode.auto) WhisperVadMode vadMode,
+    String? vadModelPath,
     @Default(null) Stream<String>? realtimeStream,
   }) = _TranscribeRequest;
   const TranscribeRequest._();

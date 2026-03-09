@@ -27,6 +27,8 @@ mixin _$TranscribeRequest {
   bool get noFallback;
   bool get diarize;
   bool get speedUp;
+  WhisperVadMode get vadMode;
+  String? get vadModelPath;
   Stream<String>? get realtimeStream;
 
   /// Create a copy of TranscribeRequest
@@ -64,6 +66,9 @@ mixin _$TranscribeRequest {
                 other.noFallback == noFallback) &&
             (identical(other.diarize, diarize) || other.diarize == diarize) &&
             (identical(other.speedUp, speedUp) || other.speedUp == speedUp) &&
+            (identical(other.vadMode, vadMode) || other.vadMode == vadMode) &&
+            (identical(other.vadModelPath, vadModelPath) ||
+                other.vadModelPath == vadModelPath) &&
             (identical(other.realtimeStream, realtimeStream) ||
                 other.realtimeStream == realtimeStream));
   }
@@ -84,11 +89,13 @@ mixin _$TranscribeRequest {
       noFallback,
       diarize,
       speedUp,
+      vadMode,
+      vadModelPath,
       realtimeStream);
 
   @override
   String toString() {
-    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, realtimeStream: $realtimeStream)';
+    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, vadMode: $vadMode, vadModelPath: $vadModelPath, realtimeStream: $realtimeStream)';
   }
 }
 
@@ -112,6 +119,8 @@ abstract mixin class $TranscribeRequestCopyWith<$Res> {
       bool noFallback,
       bool diarize,
       bool speedUp,
+      WhisperVadMode vadMode,
+      String? vadModelPath,
       Stream<String>? realtimeStream});
 }
 
@@ -141,6 +150,8 @@ class _$TranscribeRequestCopyWithImpl<$Res>
     Object? noFallback = null,
     Object? diarize = null,
     Object? speedUp = null,
+    Object? vadMode = null,
+    Object? vadModelPath = freezed,
     Object? realtimeStream = freezed,
   }) {
     return _then(_self.copyWith(
@@ -196,6 +207,14 @@ class _$TranscribeRequestCopyWithImpl<$Res>
           ? _self.speedUp
           : speedUp // ignore: cast_nullable_to_non_nullable
               as bool,
+      vadMode: null == vadMode
+          ? _self.vadMode
+          : vadMode // ignore: cast_nullable_to_non_nullable
+              as WhisperVadMode,
+      vadModelPath: freezed == vadModelPath
+          ? _self.vadModelPath
+          : vadModelPath // ignore: cast_nullable_to_non_nullable
+              as String?,
       realtimeStream: freezed == realtimeStream
           ? _self.realtimeStream
           : realtimeStream // ignore: cast_nullable_to_non_nullable
@@ -311,6 +330,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             bool noFallback,
             bool diarize,
             bool speedUp,
+            WhisperVadMode vadMode,
+            String? vadModelPath,
             Stream<String>? realtimeStream)?
         $default, {
     required TResult orElse(),
@@ -332,6 +353,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             _that.noFallback,
             _that.diarize,
             _that.speedUp,
+            _that.vadMode,
+            _that.vadModelPath,
             _that.realtimeStream);
       case _:
         return orElse();
@@ -367,6 +390,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             bool noFallback,
             bool diarize,
             bool speedUp,
+            WhisperVadMode vadMode,
+            String? vadModelPath,
             Stream<String>? realtimeStream)
         $default,
   ) {
@@ -387,6 +412,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             _that.noFallback,
             _that.diarize,
             _that.speedUp,
+            _that.vadMode,
+            _that.vadModelPath,
             _that.realtimeStream);
       case _:
         throw StateError('Unexpected subclass');
@@ -421,6 +448,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             bool noFallback,
             bool diarize,
             bool speedUp,
+            WhisperVadMode vadMode,
+            String? vadModelPath,
             Stream<String>? realtimeStream)?
         $default,
   ) {
@@ -441,6 +470,8 @@ extension TranscribeRequestPatterns on TranscribeRequest {
             _that.noFallback,
             _that.diarize,
             _that.speedUp,
+            _that.vadMode,
+            _that.vadModelPath,
             _that.realtimeStream);
       case _:
         return null;
@@ -465,6 +496,8 @@ class _TranscribeRequest extends TranscribeRequest {
       this.noFallback = false,
       this.diarize = false,
       this.speedUp = false,
+      this.vadMode = WhisperVadMode.auto,
+      this.vadModelPath,
       this.realtimeStream = null})
       : super._();
 
@@ -508,6 +541,11 @@ class _TranscribeRequest extends TranscribeRequest {
   final bool speedUp;
   @override
   @JsonKey()
+  final WhisperVadMode vadMode;
+  @override
+  final String? vadModelPath;
+  @override
+  @JsonKey()
   final Stream<String>? realtimeStream;
 
   /// Create a copy of TranscribeRequest
@@ -545,6 +583,9 @@ class _TranscribeRequest extends TranscribeRequest {
                 other.noFallback == noFallback) &&
             (identical(other.diarize, diarize) || other.diarize == diarize) &&
             (identical(other.speedUp, speedUp) || other.speedUp == speedUp) &&
+            (identical(other.vadMode, vadMode) || other.vadMode == vadMode) &&
+            (identical(other.vadModelPath, vadModelPath) ||
+                other.vadModelPath == vadModelPath) &&
             (identical(other.realtimeStream, realtimeStream) ||
                 other.realtimeStream == realtimeStream));
   }
@@ -565,11 +606,13 @@ class _TranscribeRequest extends TranscribeRequest {
       noFallback,
       diarize,
       speedUp,
+      vadMode,
+      vadModelPath,
       realtimeStream);
 
   @override
   String toString() {
-    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, realtimeStream: $realtimeStream)';
+    return 'TranscribeRequest(audio: $audio, isTranslate: $isTranslate, threads: $threads, isVerbose: $isVerbose, language: $language, isSpecialTokens: $isSpecialTokens, isNoTimestamps: $isNoTimestamps, isRealtime: $isRealtime, nProcessors: $nProcessors, splitOnWord: $splitOnWord, noFallback: $noFallback, diarize: $diarize, speedUp: $speedUp, vadMode: $vadMode, vadModelPath: $vadModelPath, realtimeStream: $realtimeStream)';
   }
 }
 
@@ -595,6 +638,8 @@ abstract mixin class _$TranscribeRequestCopyWith<$Res>
       bool noFallback,
       bool diarize,
       bool speedUp,
+      WhisperVadMode vadMode,
+      String? vadModelPath,
       Stream<String>? realtimeStream});
 }
 
@@ -624,6 +669,8 @@ class __$TranscribeRequestCopyWithImpl<$Res>
     Object? noFallback = null,
     Object? diarize = null,
     Object? speedUp = null,
+    Object? vadMode = null,
+    Object? vadModelPath = freezed,
     Object? realtimeStream = freezed,
   }) {
     return _then(_TranscribeRequest(
@@ -679,6 +726,14 @@ class __$TranscribeRequestCopyWithImpl<$Res>
           ? _self.speedUp
           : speedUp // ignore: cast_nullable_to_non_nullable
               as bool,
+      vadMode: null == vadMode
+          ? _self.vadMode
+          : vadMode // ignore: cast_nullable_to_non_nullable
+              as WhisperVadMode,
+      vadModelPath: freezed == vadModelPath
+          ? _self.vadModelPath
+          : vadModelPath // ignore: cast_nullable_to_non_nullable
+              as String?,
       realtimeStream: freezed == realtimeStream
           ? _self.realtimeStream
           : realtimeStream // ignore: cast_nullable_to_non_nullable
