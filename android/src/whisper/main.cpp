@@ -18,6 +18,12 @@
 
 using json = nlohmann::json;
 
+enum class whisper_vad_mode {
+    auto_mode,
+    disabled,
+    enabled,
+};
+
 struct whisper_params
 {
     int32_t seed = -1;
@@ -52,14 +58,27 @@ struct whisper_params
     bool print_progress = false;
     bool no_timestamps = false;
     bool split_on_word = false;
+    whisper_vad_mode vad_mode = whisper_vad_mode::auto_mode;
 
     std::string language = "id";
     std::string prompt;
     std::string model = "";
     std::string audio = "";
+    std::string vad_model_path = "";
     std::vector<std::string> fname_inp = {};
     std::vector<std::string> fname_outp = {};
 };
+
+static whisper_vad_mode parse_vad_mode(const json & json_body) {
+    const std::string vad_mode = json_body.value("vad_mode", std::string("auto"));
+    if (vad_mode == "disabled") {
+        return whisper_vad_mode::disabled;
+    }
+    if (vad_mode == "enabled") {
+        return whisper_vad_mode::enabled;
+    }
+    return whisper_vad_mode::auto_mode;
+}
 
 static struct whisper_context * g_ctx = nullptr;
 static std::string g_model_path = "";
@@ -118,6 +137,8 @@ json transcribe(json jsonBody)
     params.split_on_word = jsonBody["split_on_word"];
     params.diarize = jsonBody["diarize"];
     params.speed_up = jsonBody["speed_up"];
+    params.vad_mode = parse_vad_mode(jsonBody);
+    params.vad_model_path = jsonBody.value("vad_model_path", std::string(""));
 
     json jsonResult;
     jsonResult["@type"] = "transcribe";
@@ -185,8 +206,25 @@ json transcribe(json jsonBody)
     wparams.split_on_word = params.split_on_word;
     wparams.audio_ctx = params.speed_up ? 768 : 0; // Use smaller audio context for speedUp
     wparams.single_segment = false;
-    wparams.vad = false;
-    
+
+    if (params.split_on_word) {
+        __android_log_print(ANDROID_LOG_DEBUG, "WhisperFlutter",
+                            "[DEBUG] Disabling VAD because split_on_word requires stable timestamps");
+        wparams.vad = false;
+    } else if (params.vad_mode == whisper_vad_mode::disabled) {
+        wparams.vad = false;
+    } else if (!params.vad_model_path.empty()) {
+        wparams.vad = true;
+        wparams.vad_model_path = params.vad_model_path.c_str();
+    } else if (params.vad_mode == whisper_vad_mode::enabled) {
+        jsonResult["@type"] = "error";
+        jsonResult["message"] =
+            "VAD was explicitly enabled but no vad_model_path was provided for this platform";
+        return jsonResult;
+    } else {
+        wparams.vad = false;
+    }
+
     if (is_turbo) {
         wparams.beam_search.beam_size = 3;
         __android_log_print(ANDROID_LOG_DEBUG, "WhisperFlutter",

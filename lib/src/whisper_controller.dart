@@ -31,16 +31,18 @@ class WhisperController {
     String lang = 'en',
     bool diarize = false,
     bool withTimestamps = true,
+    bool splitOnWord = false,
     bool convert = true,
     int threads = 6,
     bool isTranslate = false,
     bool speedUp = false,
+    WhisperVadMode vadMode = WhisperVadMode.auto,
+    String? vadModelPath,
   }) async {
     await initModel(model);
 
     final Whisper whisper = Whisper(model: model);
     final DateTime start = DateTime.now();
-    const bool splitWords = false;
 
     try {
       String finalAudioPath = audioPath;
@@ -72,10 +74,12 @@ class WhisperController {
           isTranslate: isTranslate,
           threads: threads,
           isNoTimestamps: !withTimestamps,
-          splitOnWord: splitWords,
+          splitOnWord: splitOnWord,
           isRealtime: true,
           diarize: diarize,
           speedUp: speedUp,
+          vadMode: vadMode,
+          vadModelPath: vadModelPath,
         ),
         modelPath: _modelPath,
       );
@@ -96,14 +100,14 @@ class WhisperController {
       );
     } catch (e) {
       debugPrint(e.toString());
-      return null;
+      rethrow;
     }
   }
 
   static Future<String> getModelDir() async {
-    final Directory libraryDirectory = Platform.isAndroid
-        ? await getApplicationSupportDirectory()
-        : await getLibraryDirectory();
+    final Directory libraryDirectory = Platform.isIOS || Platform.isMacOS
+        ? await getLibraryDirectory()
+        : await getApplicationSupportDirectory();
     return libraryDirectory.path;
   }
 
