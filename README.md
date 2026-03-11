@@ -113,9 +113,9 @@ final result = await controller.transcribe(
 );
 ```
 
-- `WhisperVadMode.auto`: uses the platform default behavior.
+- `WhisperVadMode.auto`: automatically uses the bundled Silero VAD model when available.
 - `WhisperVadMode.disabled`: always turns VAD off.
-- `WhisperVadMode.enabled`: requires a usable VAD model path on platforms that do not bundle one automatically.
+- `WhisperVadMode.enabled`: forces VAD on and uses the bundled model by default unless you override it with `vadModelPath`.
 
 For lower-level control, pass `vadMode` and `vadModelPath` directly through `TranscribeRequest`.
 
@@ -132,9 +132,9 @@ final response = await whisper.transcribe(
 );
 ```
 
-Platform defaults:
-- iOS/macOS: `auto` tries the bundled Silero VAD model automatically.
-- Android/Windows: `auto` leaves VAD off unless you provide `vadModelPath`.
+Bundled model behavior:
+- iOS/macOS/Android/Windows: when `vadModelPath` is omitted, the package extracts the bundled Silero VAD model to an app-writable directory and reuses that path automatically.
+- `vadModelPath`: stays available as an override when you want to supply your own VAD model file.
 
 ### 6. `splitOnWord` timestamp guidance
 
