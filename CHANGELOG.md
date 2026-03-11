@@ -5,6 +5,17 @@
 
 * clarify release-please changelog and notes generation ([56d8b23](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/56d8b2345c1832409b40a82b5db1e3ac39d86287))
 
+## [1.4.1](https://github.com/DDULDDUCK/whisper_ggml_plus/compare/v1.4.0...v1.4.1) (2026-03-11)
+
+
+### Bug Fixes
+
+* clean up Dart bridge request handling ([4787819](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/47878190d027e9b12d2669e7f949c52a73af4847))
+* export native response cleanup hooks on Apple and Android ([545b420](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/545b420b74d9f1754abdc7260052594f4bc34abd))
+* harden Windows native bridge ownership and WAV paths ([f04bfdc](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/f04bfdc8242f0bdd0df24313cc4f1f9306551f75))
+* repair Windows backend path conversion ([461d6c9](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/461d6c98bd527c19e89cb7d75cc9e4f93aa8b180))
+* restore bundled VAD defaults across platforms ([3bb2166](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/3bb21662f3ff5d44441d42b48a53a86d095c9552))
+
 ## [1.4.0](https://github.com/DDULDDUCK/whisper_ggml_plus/compare/v1.3.5...v1.4.0) (2026-03-09)
 
 
