@@ -1,104 +1,247 @@
-# Whisper GGML Plus - Example App
+# Whisper GGML Plus Example App
 
-This example demonstrates how to use `whisper_ggml_plus` for speech recognition in Flutter.
+This example demonstrates a complete Flutter app flow built on top of `whisper_ggml_plus`.
+
+It covers:
+
+- loading a GGML Whisper model into app storage
+- recording 16 kHz WAV audio with `record`
+- transcribing a bundled `jfk.wav` sample file
+- running the demo on Android, iOS, macOS, and Windows
+- optionally enabling CoreML acceleration on iOS and macOS
+
+The example is intentionally more detailed than the main package README. Use this document when you want to understand the full demo flow, model setup, and platform-specific caveats.
 
 ## Quick Start
 
-### 1. Install Dependencies
+### 1. Install dependencies
+
 ```bash
 flutter pub get
 ```
 
-### 2. Download Models
+### 2. Prepare a model
 
-This example requires Whisper models. You can download them from:
+This example uses `WhisperModel.base` by default.
+
+You can get a model from:
 - [Official Whisper GGML Models](https://huggingface.co/ggerganov/whisper.cpp/tree/main)
-- [Quantized Models (Recommended for mobile)](https://huggingface.co/ggerganov/whisper.cpp)
+- [Quantized Whisper.cpp models](https://huggingface.co/ggerganov/whisper.cpp)
 
-**Recommended models for mobile:**
-- `ggml-tiny.bin` (75 MB) - Fastest, good for testing
-- `ggml-base-q5_0.bin` (47 MB) - Good balance
-- `ggml-small-q5_0.bin` (77 MB) - Better accuracy
-- `ggml-large-v3-turbo-q3_k.bin` (829 MB) - Best accuracy, Apple Silicon recommended
+Recommended starting points:
 
-### 3. Place Models
+- `ggml-tiny.bin` — fastest for quick testing
+- `ggml-base.bin` or `ggml-base-q5_0.bin` — good default balance
+- `ggml-small-q5_0.bin` — better accuracy with higher memory use
+- `ggml-large-v3-turbo-q3_k.bin` — best quality, heavier runtime and memory cost
 
-Models cannot be bundled in Flutter assets due to size. Use runtime download:
+### 3. Understand how model loading works in this example
 
-```dart
-import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
+At startup, `example/lib/main.dart` tries to:
 
-Future<String> setupModel() async {
-  final appSupport = await getApplicationSupportDirectory();
-  final modelPath = '${appSupport.path}/models/ggml-base-q5_0.bin';
-  
-  final file = File(modelPath);
-  if (!await file.exists()) {
-    await file.create(recursive: true);
-    // Download model from your CDN or server
-    final response = await http.get(Uri.parse('https://your-cdn.com/ggml-base-q5_0.bin'));
-    await file.writeAsBytes(response.bodyBytes);
-  }
-  
-  return modelPath;
-}
-```
+1. load `assets/ggml-${model.modelName}.bin`
+2. copy that `.bin` file into app storage
+3. fall back to `WhisperController.downloadModel(model)` if the asset is unavailable
 
-### 4. Run the Example
+The example also includes `assets/jfk.wav`, so you can validate transcription without recording your own audio first.
+
+### 4. Run the example
+
 ```bash
-# iOS
-flutter run -d ios
-
 # Android
 flutter run -d android
 
+# iOS
+flutter run -d ios
+
 # macOS
 flutter run -d macos
+
+# Windows
+flutter run -d windows
 ```
 
-## CoreML Setup (iOS/macOS Only)
+## What the Example App Actually Does
 
-For 3x+ faster transcription on Apple devices, you can add CoreML encoder.
+The current demo app has two main flows:
 
-### Generate CoreML Model
+### Record and transcribe
+
+When you press the microphone button, the app records audio to a temporary WAV file using:
+
+```dart
+await audioRecorder.start(
+  const RecordConfig(sampleRate: 16000, encoder: AudioEncoder.wav),
+  path: '${appDirectory.path}/test.wav',
+);
+```
+
+When you stop recording, the app transcribes that recorded file with `WhisperController.transcribe(...)`.
+
+### Transcribe the bundled sample file
+
+When you press the folder button, the app copies `assets/jfk.wav` into a temporary file and transcribes it.
+
+This is useful for validating that your model, native setup, and transcription flow are working even before microphone testing.
+
+### Important limitation
+
+This example demonstrates **file-based batch transcription**.
+
+- It does **not** stream partial tokens while recording.
+- It records a file first, then transcribes the completed file.
+- The UI shows results after inference completes.
+
+## Package and Example Dependencies
+
+The example app currently depends on:
+
+- `whisper_ggml_plus`
+- `record`
+- `path_provider`
+
+That means:
+
+- audio recording in this example is handled by `record`
+- model and temporary file paths are resolved with `path_provider`
+- transcription is handled by the package itself
+
+## Basic Usage Example
+
+This is the core package-level flow the example is using:
+
+```dart
+final controller = WhisperController();
+
+final result = await controller.transcribe(
+  model: WhisperModel.base,
+  audioPath: audioPath,
+  lang: 'auto',
+);
+
+if (result != null) {
+  print(result.transcription.text);
+}
+```
+
+## Loading or Downloading a Model
+
+If you want to mirror the example app behavior in your own project, this is the important part:
+
+```dart
+final controller = WhisperController();
+
+await controller.downloadModel(WhisperModel.base);
+final path = await controller.getPath(WhisperModel.base);
+print(path);
+```
+
+Notes:
+
+- `downloadModel()` downloads the official GGML model file for the selected `WhisperModel`.
+- `getPath()` returns the path where the model should live in app-writable storage.
+- If you bundle a `.bin` model as a Flutter asset, you still need to copy it to a writable path before inference.
+
+## Using Different Models
+
+The example defaults to:
+
+```dart
+final model = WhisperModel.base;
+```
+
+You can switch that to another built-in enum such as:
+
+- `WhisperModel.tiny`
+- `WhisperModel.base`
+- `WhisperModel.small`
+- `WhisperModel.medium`
+- `WhisperModel.large`
+- `WhisperModel.largeV3Turbo`
+
+When you change the model, make sure the corresponding GGML `.bin` file is available.
+
+## Audio Format Notes
+
+### What this example uses
+
+This demo records WAV directly, so it avoids an additional conversion step during the microphone flow.
+
+### If your real app uses MP3, M4A, MP4, or other formats
+
+The core package does not bundle FFmpeg. For automatic conversion in a real application, follow the main package README and register `whisper_ggml_plus_ffmpeg`.
+
+This example does **not** demonstrate that FFmpeg companion flow directly.
+
+## Optional CoreML Setup (iOS/macOS Only)
+
+For 3x+ faster transcription on Apple Silicon devices, you can optionally place a CoreML encoder next to the GGML `.bin` model.
+
+This section is only relevant for iOS and macOS. It is not required for Android or Windows.
+
+### What is `.mlmodelc`?
+
+`.mlmodelc` is a **compiled CoreML model directory**, not a single file.
+
+Typical contents:
+
+- `model.mil`
+- `coremldata.bin`
+- `metadata.json`
+
+Important rules:
+
+1. `.mlmodelc` must remain a directory.
+2. It must live in the same directory as the GGML `.bin` model.
+3. The base names must match.
+4. You cannot bundle `.mlmodelc` correctly with normal Flutter asset packaging.
+
+### 1. Generate a CoreML encoder
 
 ```bash
-# Clone whisper.cpp
 git clone https://github.com/ggerganov/whisper.cpp
 cd whisper.cpp
 
-# Setup Python environment
 python3.11 -m venv venv
 source venv/bin/activate
 pip install torch==2.5.0 "numpy<2.0" coremltools==8.1 openai-whisper ane_transformers
 
-# Generate CoreML encoder for base model
+# Generate for base
 ./models/generate-coreml-model.sh base
-# Output: models/ggml-base-encoder.mlmodelc/ (~800MB directory)
 
-# Or for large-v3-turbo
+# Or generate for Large-v3-Turbo
 ./models/generate-coreml-model.sh large-v3-turbo
-# Output: models/ggml-large-v3-turbo-encoder.mlmodelc/ (~1.2GB directory)
 ```
 
-### Deploy CoreML Model
+Expected output:
 
-**Option A: Download at Runtime (Recommended)**
+```text
+models/ggml-base-encoder.mlmodelc/
+models/ggml-large-v3-turbo-encoder.mlmodelc/
+```
+
+### 2. Deploy the CoreML directory
+
+#### Option A: download at runtime
 
 ```dart
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+
 Future<void> setupCoreMLModel() async {
   final appSupport = await getApplicationSupportDirectory();
-  final mlmodelcDir = Directory('${appSupport.path}/models/ggml-base-encoder.mlmodelc');
-  
+  final mlmodelcDir =
+      Directory('${appSupport.path}/models/ggml-base-encoder.mlmodelc');
+
   if (!await mlmodelcDir.exists()) {
     await mlmodelcDir.create(recursive: true);
-    
-    // Download each file inside .mlmodelc directory
+
     final files = ['model.mil', 'coremldata.bin', 'metadata.json'];
     for (final file in files) {
       final response = await http.get(
-        Uri.parse('https://your-cdn.com/ggml-base-encoder.mlmodelc/$file')
+        Uri.parse('https://your-cdn.com/ggml-base-encoder.mlmodelc/$file'),
       );
       await File('${mlmodelcDir.path}/$file').writeAsBytes(response.bodyBytes);
     }
@@ -106,216 +249,120 @@ Future<void> setupCoreMLModel() async {
 }
 ```
 
-**Option B: iOS Native Bundle (Advanced)**
+#### Option B: add it in Xcode
 
-1. Open `ios/Runner.xcworkspace` in Xcode
-2. Drag `ggml-base-encoder.mlmodelc` folder into project navigator
-3. **Important:** Select "Create folder references" (blue folder icon), NOT "Create groups"
-4. Ensure it's added to Runner target
-5. Access via bundle path in code
+1. Open the iOS or macOS runner project in Xcode.
+2. Drag the `.mlmodelc` folder into the project navigator.
+3. Choose **Create folder references**, not **Create groups**.
+4. Add it to the correct target.
 
-### Verify CoreML is Working
+### 3. File structure example
 
-Check Xcode console for these logs:
+#### Without CoreML
 
-**Success:**
-```
-[CoreML Debug] whisper_coreml_init called
-[CoreML Debug] Attempting to load from: /path/to/model.mlmodelc
-[CoreML Debug] File exists: 1, Is directory: 1
-[CoreML Debug] Starting MLModel initialization...
-[CoreML Debug] CoreML model loaded successfully!
-```
-
-**Failure:**
-```
-[CoreML Error] Model file/directory does not exist at path: /path/to/model.mlmodelc
-[CoreML Debug] Parent directory (...) contains:
-[CoreML Debug]   - ggml-base-q5_0.bin
-[CoreML Debug]   - (no .mlmodelc directory found)
-```
-
-## File Structure Example
-
-### Without CoreML (Metal acceleration)
-```
+```text
 /app/support/models/
 └── ggml-base-q5_0.bin
 ```
 
-### With CoreML (NPU acceleration)
-```
+#### With CoreML
+
+```text
 /app/support/models/
 ├── ggml-base-q5_0.bin
-└── ggml-base-encoder.mlmodelc/          ← Must be directory
-    ├── model.mil                         ← CoreML model IR
-    ├── coremldata.bin                    ← Model weights
-    └── metadata.json                     ← Model config
+└── ggml-base-encoder.mlmodelc/
+    ├── model.mil
+    ├── coremldata.bin
+    └── metadata.json
 ```
 
-**Critical Rules:**
-1. `.mlmodelc` **must be a directory**, not a file
-2. `.mlmodelc` **must be in same directory** as `.bin` file
-3. Base names must match: `ggml-base-*.bin` → `ggml-base-encoder.mlmodelc`
-4. **Cannot use Flutter assets** - directory structure breaks
+### 4. How detection works
 
-## Usage Example
+When Whisper loads a GGML model, whisper.cpp automatically looks for the matching `-encoder.mlmodelc` directory next to that `.bin` file.
 
-### Basic Transcription
+Example:
 
-```dart
-import 'package:whisper_ggml_plus/whisper_ggml_plus.dart';
+- `ggml-base-q5_0.bin` → `ggml-base-encoder.mlmodelc/`
+- `ggml-large-v3-turbo-q3_k.bin` → `ggml-large-v3-turbo-encoder.mlmodelc/`
 
-final controller = WhisperController();
-
-// Transcribe audio file (must be 16kHz mono WAV)
-final result = await controller.transcribe(
-  model: '/path/to/models/ggml-base-q5_0.bin',
-  audioPath: '/path/to/audio.wav',
-  lang: 'auto', // or 'en', 'ko', 'ja', etc.
-);
-
-if (result != null) {
-  print('Full text: ${result.transcription.text}');
-  
-  // Print segments with timestamps
-  for (final segment in result.transcription.segments) {
-    print('[${segment.fromTs} -> ${segment.toTs}] ${segment.text}');
-  }
-}
-```
-
-### Convert Audio to 16kHz Mono WAV
-
-Whisper requires specific audio format. Use `ffmpeg_kit_flutter`:
-
-```dart
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-
-Future<String> convertToWav(String inputPath) async {
-  final outputPath = inputPath.replaceAll(RegExp(r'\.[^.]+$'), '_16k_mono.wav');
-  
-  await FFmpegKit.execute(
-    '-i "$inputPath" -ar 16000 -ac 1 -c:a pcm_s16le "$outputPath"'
-  );
-  
-  return outputPath;
-}
-```
-
-### Using Pre-defined Models
-
-```dart
-import 'package:whisper_ggml_plus/whisper_ggml_plus.dart';
-
-// Download pre-defined models automatically
-final result = await controller.transcribe(
-  model: WhisperModel.base,  // tiny, base, small, medium, largeV3
-  audioPath: audioPath,
-  lang: 'en',
-);
-```
+If the CoreML directory is present and valid, Apple devices can use it automatically.
 
 ## Performance Tips
 
-### Model Selection
+### Model selection
 
-| Model | Size | Speed | Accuracy | Best For |
-|-------|------|-------|----------|----------|
-| `tiny` | 75 MB | Fastest | Low | Testing, prototyping |
-| `base` | 142 MB | Fast | Good | General use, mobile |
-| `small` | 466 MB | Medium | Better | Quality transcription |
-| `large-v3-turbo` | 1.6 GB | Slow (3x with CoreML) | Best | Apple Silicon only |
+| Model | Speed | Accuracy | Best for |
+| --- | --- | --- | --- |
+| `tiny` | Fastest | Lowest | smoke tests and quick validation |
+| `base` | Fast | Good | default example usage |
+| `small` | Medium | Better | better quality with moderate cost |
+| `large-v3-turbo` | Slowest | Best | Apple Silicon or high-memory devices |
 
-### Quantization
+### Practical guidance
 
-Use quantized models to reduce RAM:
-- `q2_k` - Smallest, lowest quality (not recommended)
-- `q3_k` - Good balance for large models
-- `q5_0` - Best balance for base/small models
-- `q8_0` - Minimal quality loss, larger size
-
-### Acceleration Priority (iOS/macOS)
-
-1. **CoreML (NPU)** - 3-5x faster, best battery (if `.mlmodelc` present)
-2. **Metal (GPU)** - 2-3x faster (automatic fallback)
-3. **CPU (SIMD)** - Baseline speed (used if Metal unavailable)
-
-### Android Optimization
-
-- Use `q5_0` or `q3_k` quantization
-- Prefer `base` or `small` models (large models too slow on mobile CPU)
-- Test in `--release` mode (SIMD optimizations only work in release)
+- Test in `--release` mode for realistic native performance.
+- Prefer `base` or quantized models for mobile testing.
+- Use `large-v3-turbo` only when you can afford the memory and runtime cost.
+- CoreML is optional, but can significantly improve Apple-device performance.
 
 ## Troubleshooting
 
-### "Model not found" Error
+### The model file is not found
 
-**Symptom:**
-```
-Exception: Model file not found: /path/to/model.bin
-```
+Possible causes:
 
-**Solution:**
-- Check file exists: `await File(modelPath).exists()`
-- Use absolute path, not relative
-- Verify path is in app's accessible directory (use `path_provider`)
+- the `.bin` model was never copied into app storage
+- the asset name does not match `ggml-${model.modelName}.bin`
+- the fallback download has not completed successfully
 
-### CoreML Not Detected
+Check that:
 
-**Symptom:**
-```
-[CoreML Error] Model file/directory does not exist
-```
+- `await controller.getPath(model)` points to a real file
+- your selected `WhisperModel` matches the model you prepared
+- the device has permission to write to the app directory
 
-**Solution:**
-1. Verify `.mlmodelc` is a **directory** (not a file)
-2. Check `.mlmodelc` is in **same directory** as `.bin` file
-3. Verify base names match: `ggml-base-*.bin` → `ggml-base-encoder.mlmodelc`
-4. Do NOT bundle via Flutter assets - use runtime download
+### Microphone recording works, but transcription fails
 
-### Slow Transcription
+Check that:
 
-**Symptom:**
-- Takes 30+ seconds for 10-second audio
-- Battery drains quickly
+- the app actually produced `test.wav`
+- the model file exists in app storage
+- the device has enough memory for the selected model
+- you are not expecting streaming output from a batch API
 
-**Solution:**
-- **iOS/macOS:** Add CoreML encoder (3x+ speedup)
-- **Android:** Use smaller model (`base` instead of `large`)
-- Always test in `--release` mode (debug mode is 5-10x slower)
-- Use quantized models (`q5_0`, `q3_k`)
+### `jfk.wav` works but the microphone flow does not
 
-### Segmentation Issues (Large-v3-Turbo)
+That usually means the package itself is working, but the issue is in recording or file handling.
 
-**Symptom:**
-- All text in single segment
-- No timestamps between sentences
+Check:
 
-**Solution:**
-- This is fixed in v1.2.6+ (automatic beam search for Turbo models)
-- If using older version, upgrade to latest:
-  ```yaml
-  dependencies:
-    whisper_ggml_plus: ^1.2.10
-  ```
+- microphone permission
+- whether `record` can create the WAV file on that platform
+- whether the recorded file path exists before transcription
 
-### Out of Memory Crash
+### CoreML is not detected
 
-**Symptom:**
-```
-Fatal Exception: NSException
-Memory allocation failed
-```
+Check that:
 
-**Solution:**
-- Use smaller model (`base` instead of `large`)
-- Use quantized variant (`q3_k`, `q5_0`)
-- Large-v3 requires ~4GB RAM - use on high-end devices only
+- `.mlmodelc` is a directory, not a file
+- it is next to the `.bin` model
+- the base names match
+- you used runtime storage or Xcode folder references instead of Flutter assets
+
+### Transcription is slow
+
+That is often expected with larger models.
+
+Try:
+
+- `WhisperModel.base`
+- a quantized model such as `q5_0` or `q3_k`
+- `--release` mode
+- optional CoreML on Apple devices
 
 ## Resources
 
-- [Official Documentation](https://github.com/DDULDDUCK/whisper_ggml_plus)
+- [Main package README](../README.md)
 - [Whisper.cpp Repository](https://github.com/ggerganov/whisper.cpp)
 - [Pre-trained Models](https://huggingface.co/ggerganov/whisper.cpp/tree/main)
 - [GGML Quantization Guide](https://github.com/ggerganov/ggml#quantization)
