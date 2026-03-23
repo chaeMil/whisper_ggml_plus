@@ -62,7 +62,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  set(ggml_library_flutter_bundled_libraries
+  set(whisper_ggml_plus_bundled_libraries
     $<TARGET_FILE:${PROJECT_NAME}>
     PARENT_SCOPE
   )
