@@ -5,6 +5,13 @@
 
 * clarify release-please changelog and notes generation ([56d8b23](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/56d8b2345c1832409b40a82b5db1e3ac39d86287))
 
+## [1.5.0](https://github.com/DDULDDUCK/whisper_ggml_plus/compare/v1.4.2...v1.5.0) (2026-03-23)
+
+
+### Features
+
+* windows build ([7927493](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/7927493cd76b7b211cd96d9163b6b453cb7ff65e))
+
 ## [1.4.2](https://github.com/DDULDDUCK/whisper_ggml_plus/compare/v1.4.1...v1.4.2) (2026-03-17)
 
 
