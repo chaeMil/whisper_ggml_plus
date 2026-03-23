@@ -152,12 +152,10 @@ class _MyHomePageState extends State<MyHomePage> {
       /// NOTE: Only GGML .bin models can be bundled in assets.
       /// CoreML .mlmodelc directories CANNOT be bundled via assets!
       /// See header comments for CoreML deployment methods.
-      final bytesBase =
-          await rootBundle.load('assets/ggml-${model.modelName}.bin');
+      final bytesBase = await rootBundle.load('assets/ggml-${model.modelName}.bin');
       final modelPathBase = await whisperController.getPath(model);
       final fileBase = File(modelPathBase);
-      await fileBase.writeAsBytes(bytesBase.buffer
-          .asUint8List(bytesBase.offsetInBytes, bytesBase.lengthInBytes));
+      await fileBase.writeAsBytes(bytesBase.buffer.asUint8List(bytesBase.offsetInBytes, bytesBase.lengthInBytes));
     } catch (e) {
       /// On error try downloading the model
       await whisperController.downloadModel(model);
@@ -212,8 +210,10 @@ class _MyHomePageState extends State<MyHomePage> {
         });
 
         final Directory appDirectory = await getTemporaryDirectory();
-        await audioRecorder.start(const RecordConfig(),
-            path: '${appDirectory.path}/test.m4a');
+        await audioRecorder.start(
+          const RecordConfig(sampleRate: 16000, encoder: AudioEncoder.wav),
+          path: '${appDirectory.path}/test.wav',
+        );
       }
     }
   }
