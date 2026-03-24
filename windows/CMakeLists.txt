@@ -10,11 +10,11 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(PROJECT_VERSION "1.8.3")
 set(SOVERSION 1)
-set(PLATFORM_SHARED_ROOT "${CMAKE_CURRENT_LIST_DIR}/../macos/Classes")
-set(WHISPER_ROOT_DIR "${PLATFORM_SHARED_ROOT}/whisper")
+set(WHISPER_ROOT "${CMAKE_CURRENT_LIST_DIR}/Classes")
+set(WHISPER_ROOT_DIR "${WHISPER_ROOT}/whisper")
 set(WHISPER_SRC_DIR "${WHISPER_ROOT_DIR}/src")
 set(GGML_ROOT_DIR "${WHISPER_ROOT_DIR}/ggml")
-set(JSON_ROOT_DIR "${PLATFORM_SHARED_ROOT}/json")
+set(JSON_ROOT_DIR "${WHISPER_ROOT}/json")
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build vendored libs static" FORCE)
 set(GGML_METAL OFF CACHE BOOL "Disable Metal backend on Windows" FORCE)
@@ -26,10 +26,11 @@ set(WHISPER_COREML OFF CACHE BOOL "Disable CoreML on Windows" FORCE)
 set(WHISPER_OPENVINO OFF CACHE BOOL "Disable OpenVINO on Windows" FORCE)
 set(WHISPER_ALL_WARNINGS OFF CACHE BOOL "Use default warnings" FORCE)
 set(GGML_ALL_WARNINGS OFF CACHE BOOL "Use default warnings" FORCE)
+set(GGML_VULKAN ON CACHE BOOL "Enable Vulkan backend for ggml" FORCE)
 
 add_compile_definitions(
   WHISPER_VERSION=\"1.8.3\"
-  GGML_USE_CPU
+  GGML_USE_VULKAN
 )
 
 add_subdirectory("${GGML_ROOT_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/ggml")
@@ -41,7 +42,7 @@ add_library(${PROJECT_NAME} SHARED
 
 target_include_directories(${PROJECT_NAME} PRIVATE
   "${CMAKE_CURRENT_LIST_DIR}"
-  "${PLATFORM_SHARED_ROOT}"
+  "${WHISPER_ROOT}"
   "${WHISPER_ROOT_DIR}"
   "${WHISPER_ROOT_DIR}/include"
   "${WHISPER_SRC_DIR}"
