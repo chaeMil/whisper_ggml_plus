@@ -5,6 +5,13 @@
 
 * clarify release-please changelog and notes generation ([56d8b23](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/56d8b2345c1832409b40a82b5db1e3ac39d86287))
 
+## [1.5.2](https://github.com/DDULDDUCK/whisper_ggml_plus/compare/v1.5.1...v1.5.2) (2026-04-01)
+
+
+### Bug Fixes
+
+* exclude local artifacts from published package ([d2e1ace](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/d2e1ace8539ff912b0aee97203f35b4e736a9b84))
+
 ## [1.5.1](https://github.com/DDULDDUCK/whisper_ggml_plus/compare/v1.5.0...v1.5.1) (2026-04-01)
 
 
