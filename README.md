@@ -37,6 +37,10 @@ The package currently declares support for all of the platforms below. Apple pla
 | macOS | ✅ | Metal, optional CoreML |
 | Windows | ✅ | FFI plugin, example support |
 
+## Android note
+
+The plugin now requests 16 KB-compatible native linking for 64-bit Android builds via its native linker configuration. Final APK/AAB packaging may still depend on the consuming app, including whether it uses a modern AGP version or legacy native library packaging settings.
+
 ## What this package does
 
 At a high level, the package takes an audio file path, prepares the matching GGML model path, and runs Whisper.cpp locally through FFI. If your app already works with saved audio files, this package is designed for that workflow.
