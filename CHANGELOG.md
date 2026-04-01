@@ -5,6 +5,13 @@
 
 * clarify release-please changelog and notes generation ([56d8b23](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/56d8b2345c1832409b40a82b5db1e3ac39d86287))
 
+## [1.5.1](https://github.com/DDULDDUCK/whisper_ggml_plus/compare/v1.5.0...v1.5.1) (2026-04-01)
+
+
+### Bug Fixes
+
+* enforce 16 KB page alignment for Android builds ([5ea1416](https://github.com/DDULDDUCK/whisper_ggml_plus/commit/5ea1416bb856ae91a53c140681a233721208e0fd))
+
 ## [1.5.0](https://github.com/DDULDDUCK/whisper_ggml_plus/compare/v1.4.2...v1.5.0) (2026-03-23)
 
 
