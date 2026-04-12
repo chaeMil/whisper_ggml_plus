@@ -45,6 +45,13 @@ if (ATOMIC_LIB)
     target_link_libraries(whisper_flutter PRIVATE ${ATOMIC_LIB})
 endif()
 
+if (ANDROID)
+    target_link_options(whisper_flutter PRIVATE
+        $<$<OR:$<STREQUAL:${ANDROID_ABI},arm64-v8a>,$<STREQUAL:${ANDROID_ABI},x86_64>>:LINKER:-z,max-page-size=16384>
+        $<$<OR:$<STREQUAL:${ANDROID_ABI},arm64-v8a>,$<STREQUAL:${ANDROID_ABI},x86_64>>:LINKER:-z,common-page-size=16384>
+    )
+endif()
+
 set_target_properties(whisper_flutter PROPERTIES
     PUBLIC_HEADER src/whisper.h
     OUTPUT_NAME "whisper"
